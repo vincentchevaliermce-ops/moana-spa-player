@@ -62,6 +62,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .btn-play{width:72px;height:72px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));border-radius:50%;box-shadow:0 4px 20px rgba(201,168,76,.3)}
 .btn-play:hover{box-shadow:0 4px 30px rgba(201,168,76,.5)}
 .btn-play svg{color:var(--bg-dark)}
+.btn-shuffle{width:40px;height:40px;opacity:.5;transition:all .2s}
+.btn-shuffle:hover,.btn-shuffle.active{opacity:1;color:var(--gold)}
+.btn-shuffle.active{filter:drop-shadow(0 0 6px rgba(201,168,76,.5))}
 
 /* Volume */
 .volume-section{display:flex;align-items:center;gap:12px;padding:0 16px;margin:8px 0;z-index:1;position:relative}
@@ -160,6 +163,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </button>
       <button class="btn btn-skip" id="btnNext" aria-label="Suivant">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+      </button>
+      <button class="btn btn-shuffle active" id="btnShuffle" aria-label="Mélanger" title="Mélanger la playlist">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
       </button>
     </div>
 
@@ -413,6 +419,15 @@ let crossfading = false;
 let loopCount = 1;
 let masterVolume = 0.6;
 let crossfadeTimer = null;
+let shuffleEnabled = true;
+
+// Fisher-Yates shuffle
+function shuffleTracks() {
+  for (let i = TRACKS.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [TRACKS[i], TRACKS[j]] = [TRACKS[j], TRACKS[i]];
+  }
+}
 
 const disc = document.getElementById('disc');
 const trackTitle = document.getElementById('trackTitle');
@@ -598,7 +613,10 @@ function togglePlay() {
 
 function nextTrack() {
   currentIndex = (currentIndex + 1) % TRACKS.length;
-  if (currentIndex === 0) { loopCount++; loopCounter.textContent = 'Boucle ' + loopCount; }
+  if (currentIndex === 0) {
+    loopCount++; loopCounter.textContent = 'Boucle ' + loopCount;
+    if (shuffleEnabled) { shuffleTracks(); buildPlaylist(); }
+  }
   loadAndPlay();
 }
 
@@ -727,8 +745,24 @@ startOverlay.addEventListener('click', () => {
 // INIT
 // ================================================================
 
+// Shuffle par défaut au démarrage
+shuffleTracks();
 buildPlaylist();
 dotCrossfade.classList.remove('off'); // crossfade ON par défaut
+
+// Bouton shuffle
+const btnShuffle = document.getElementById('btnShuffle');
+btnShuffle.addEventListener('click', () => {
+  shuffleEnabled = !shuffleEnabled;
+  btnShuffle.classList.toggle('active', shuffleEnabled);
+  if (shuffleEnabled) {
+    shuffleTracks();
+    buildPlaylist();
+    showToast('🔀 Lecture aléatoire activée');
+  } else {
+    showToast('➡️ Lecture dans l\'ordre');
+  }
+});
 </script>
 </body>
 </html>

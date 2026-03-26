@@ -1,5 +1,5 @@
 // Service Worker pour MOANA Spa Music PWA
-const CACHE_NAME = 'moana-spa-v2';
+const CACHE_NAME = 'moana-spa-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
